@@ -1,0 +1,82 @@
+
+name: n8n Playwright Dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: "Testdatei oder Ordner unter tests (leer = alle)"
+        required: false
+        type: string
+        default: ""
+
+      grep:
+        description: "Testname oder Tag-Filter (leer = alle)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  playwright-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run selected Playwright tests
+        shell: bash
+        env:
+          SPEC: ${{ inputs.spec }}
+          GREP: ${{ inputs.grep }}
+        run: |
+          set -euo pipefail
+
+          ARGS=()
+
+          if [[ -n "$SPEC" ]]; then
+            if [[ "$SPEC" != tests/* || "$SPEC" == *".."* ]]; then
+              echo "Invalid test path: $SPEC"
+              exit 1
+            fi
+
+            if [[ ! -e "$SPEC" ]]; then
+              echo "Test path does not exist: $SPEC"
+              exit 1
+            fi
+
+            ARGS+=("$SPEC")
+          fi
+
+          if [[ -n "$GREP" ]]; then
+            ARGS+=(--grep "$GREP")
+          fi
+
+          npx playwright test "${ARGS[@]}" --reporter=list,html
+
+      - name: Upload Playwright reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore
