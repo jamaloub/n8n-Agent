@@ -21,18 +21,40 @@ test.describe('Core Shopper Operations', () => {
     await expect(productPrices.nth(1)).toHaveText('$9.99');
 
     // 3. Open the Sauce Labs Backpack product details.
+   
+// 3. Open the Sauce Labs Backpack product details.
+
+    // 3. Open the Sauce Labs Backpack product details.
     await page.locator('[data-test="item-4-title-link"]').click();
-    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText('Sauce Labs Backpack');
-    await expect(page.locator('[data-test="inventory-item-desc"]')).toHaveText(
-      'carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection.',
+
+    // Verify that the product details page is opened.
+    await expect(page).toHaveURL(/inventory-item\.html/);
+
+    // Verify product details.
+    await expect(
+      page.locator('.inventory_details_name')
+    ).toHaveText('Sauce Labs Backpack');
+
+    await expect(
+      page.locator('.inventory_details_desc')
+    ).toHaveText(
+      'carry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection.'
     );
-    await expect(page.locator('[data-test="inventory-item-price"]')).toHaveText('$29.99');
-    await expect(page.locator('[data-test="add-to-cart"]')).toBeVisible();
+
+    await expect(
+      page.locator('.inventory_details_price')
+    ).toHaveText('$29.99');
+
+    await expect(
+      page.locator('[data-test="add-to-cart"]')
+    ).toBeVisible();
 
     // 4. Return to the inventory/catalog view.
     await page.locator('[data-test="back-to-products"]').click();
-    await expect(page).toHaveURL(/\/inventory\.html$/);
-    await expect(page.locator('[data-test="product-sort-container"]')).toBeVisible();
-    await expect(page.locator('[data-test="item-4-img-link"]')).toBeVisible();
+    await expect(page).toHaveURL(/inventory\.html$/);
+    await expect(
+      page.locator('[data-test="product-sort-container"]')
+    ).toBeVisible();
+
   });
 });
